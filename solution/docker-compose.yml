@@ -1,0 +1,6 @@
+services:
+  incidents-search-service:
+    image: ${DOCKER_REGISTRY-}api
+    build:
+      context: .
+      dockerfile: api/Dockerfile
