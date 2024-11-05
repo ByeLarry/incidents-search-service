@@ -2,9 +2,11 @@
 {
     public interface IRabbitMQService : IDisposable
     {
-        public void SendMessage(string message, string queueName, string exchange = "");
+        void SendMessage(string message, string queueName, string exchange);
 
-        public void ReceiveMessage(string queueName, Action<string> onMessageReceived);
+        void ReceiveMessage(string queueName, Action<string> onMessageReceived);
 
+        void ReceiveMessageRpc(string queueName, string exchange, Func<string, string> onMessageReceived);
     }
+
 }

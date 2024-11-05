@@ -5,3 +5,11 @@ services:
       - ASPNETCORE_HTTP_PORTS=8080
     ports:
       - "8080"
+  elasticsearch:
+    environment:
+      - discovery.type=single-node 
+      - ELASTIC_PASSWORD=1111 
+    ports:
+      - "9200:9200"
+    volumes:
+      - ./esdata:/usr/share/elasticsearch/data
