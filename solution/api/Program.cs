@@ -4,6 +4,8 @@ using api.Services;
 using api.Options;
 using Elastic.Clients.Elasticsearch;
 using Elastic.Transport;
+using Microsoft.AspNetCore.Diagnostics.HealthChecks;
+using HealthChecks.UI.Client;
 
 internal class Program
 {
@@ -11,8 +13,12 @@ internal class Program
     {
         var builder = WebApplication.CreateSlimBuilder(args);
 
+        builder.Services.AddHealthChecksUI().AddInMemoryStorage();
+
         builder.Services.Configure<RabbitMQOptions>(builder.Configuration.GetSection("RabbitMQOptions"));
         builder.Services.AddSingleton<IRabbitMQService, RabbitMQService>();
+
+        builder.Services.AddHealthChecks();
 
         builder.Services.Configure<ElasticsearchOptoins>(builder.Configuration.GetSection("Elasticsearch"));
         var elasticsearchSettings = builder.Configuration.GetSection("Elasticsearch").Get<ElasticsearchOptoins>();
@@ -29,6 +35,12 @@ internal class Program
 
 
         var app = builder.Build();
+
+        app.MapHealthChecks("/health", new HealthCheckOptions()
+        {
+            ResponseWriter = UIResponseWriter.WriteHealthCheckUIResponse
+        });
+        app.MapHealthChecksUI();
 
         var rabbitMQService = app.Services.GetRequiredService<IRabbitMQService>();
 
