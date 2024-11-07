@@ -1,11 +1,5 @@
 
-using api.Interfaces;
-using api.Services;
-using api.Options;
-using Elastic.Clients.Elasticsearch;
-using Elastic.Transport;
-using Microsoft.AspNetCore.Diagnostics.HealthChecks;
-using HealthChecks.UI.Client;
+using api.Extensions;
 
 internal class Program
 {
@@ -13,38 +7,16 @@ internal class Program
     {
         var builder = WebApplication.CreateSlimBuilder(args);
 
-        builder.Services.AddHealthChecksUI().AddInMemoryStorage();
-
-        builder.Services.Configure<RabbitMQOptions>(builder.Configuration.GetSection("RabbitMQOptions"));
-        builder.Services.AddSingleton<IRabbitMQService, RabbitMQService>();
-
-        builder.Services.AddHealthChecks();
-
-        builder.Services.Configure<ElasticsearchOptoins>(builder.Configuration.GetSection("Elasticsearch"));
-        var elasticsearchSettings = builder.Configuration.GetSection("Elasticsearch").Get<ElasticsearchOptoins>();
-
-        if (elasticsearchSettings != null )
-            builder.Services.AddSingleton(provider =>
-            {
-                var settings = new ElasticsearchClientSettings(new Uri(elasticsearchSettings.Url))
-                    .Authentication(new BasicAuthentication(elasticsearchSettings.Username, elasticsearchSettings.Password));
-
-                return new ElasticsearchClient(settings);
-            });
-        builder.Services.AddScoped<ElasticSearchService>();
-
+        builder.Services.AddCustomHealthChecks();
+        builder.Services.AddMessageHandlersService();
+        builder.Services.AddRabbitMQServices(builder.Configuration);
+        builder.Services.AddElasticsearchServices(builder.Configuration);
 
         var app = builder.Build();
 
-        app.MapHealthChecks("/health", new HealthCheckOptions()
-        {
-            ResponseWriter = UIResponseWriter.WriteHealthCheckUIResponse
-        });
-        app.MapHealthChecksUI();
+        app.MapCustomHealthChecks();
 
-        var rabbitMQService = app.Services.GetRequiredService<IRabbitMQService>();
-
-        rabbitMQService.ReceiveMessageRpc(RabbitMQService.defaultQueue, RabbitMQService.defaultExchange, ElasticSearchService.TestFunc);
+        app.InitializeRabbitMQService();
 
         app.Run();
     }

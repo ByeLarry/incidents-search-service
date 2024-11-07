@@ -51,20 +51,24 @@ namespace api.Services
             _channel.BasicConsume(queue: queueName, autoAck: true, consumer: consumer);
         }
 
-        public void ReceiveMessageRpc(string queueName, string exchange, Func<string, string> onMessageReceived)
+        public void ReceiveMessageRpc(string queueName, string exchange, Func<string, Task<string>> onMessageReceived)
         {
             _channel.QueueDeclare(queue: queueName, durable: false, exclusive: false, autoDelete: false, arguments: null);
             var consumer = new EventingBasicConsumer(_channel);
 
-            consumer.Received += (model, ea) =>
+            consumer.Received += async (model, ea) =>
             {
                 var body = ea.Body.ToArray();
                 var message = Encoding.UTF8.GetString(body);
-                var response = onMessageReceived(message);
+                Console.WriteLine($"[Request] - {message}");
+                var response = await onMessageReceived(message);
 
                 var props = _channel.CreateBasicProperties();
                 props.CorrelationId = ea.BasicProperties.CorrelationId;
                 var responseBytes = Encoding.UTF8.GetBytes(response);
+                Console.WriteLine($"[Response id] - {props.CorrelationId}");
+                Console.WriteLine($"[Response] - {Encoding.UTF8.GetString(responseBytes)}");
+                Console.WriteLine($"[Response Basic Properties] - {props}");
 
                 _channel.BasicPublish(
                     exchange: exchange,
