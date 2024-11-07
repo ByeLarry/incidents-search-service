@@ -8,5 +8,6 @@
         public const string IndexingError = "Indexing error";
         public const string Indexed = "Indexed";
         public const string IndexCleared = "Index cleared";
+        public const string Deleted = "Deleted";
     }
 }

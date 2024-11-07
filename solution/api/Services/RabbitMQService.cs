@@ -12,7 +12,6 @@ namespace api.Services
         private readonly IConnection _connection;
         private readonly IModel _channel;
         public const string defaultQueue = "search_queue";
-        public const string defaultReplyQueue = "search_queue_reply";
         public const string defaultExchange = "";
 
         public RabbitMQService(IOptions<RabbitMQOptions> options)
@@ -28,7 +27,6 @@ namespace api.Services
             _channel = _connection.CreateModel();
 
             _channel.QueueDeclare(queue: defaultQueue, durable: false, exclusive: false, autoDelete: false, arguments: null);
-            _channel.QueueDeclare(queue: defaultReplyQueue, durable: false, exclusive: false, autoDelete: false, arguments: null);
         }
 
         public void SendMessage(string message, string queueName, string exchange)
@@ -60,15 +58,11 @@ namespace api.Services
             {
                 var body = ea.Body.ToArray();
                 var message = Encoding.UTF8.GetString(body);
-                Console.WriteLine($"[Request] - {message}");
                 var response = await onMessageReceived(message);
 
                 var props = _channel.CreateBasicProperties();
                 props.CorrelationId = ea.BasicProperties.CorrelationId;
                 var responseBytes = Encoding.UTF8.GetBytes(response);
-                Console.WriteLine($"[Response id] - {props.CorrelationId}");
-                Console.WriteLine($"[Response] - {Encoding.UTF8.GetString(responseBytes)}");
-                Console.WriteLine($"[Response Basic Properties] - {props}");
 
                 _channel.BasicPublish(
                     exchange: exchange,

@@ -27,7 +27,6 @@ namespace api.Services
 
             if (!response.IsValidResponse)
             {
-                Console.WriteLine(response.DebugInformation);
                 throw new Exception("Documents indexing error in Elasticsearch");
             }
 
@@ -46,23 +45,21 @@ namespace api.Services
         public async Task<DeleteIndexResponse> ClearIndexAsync(string indexName)
         {
             var response = await _client.Indices.DeleteAsync(indexName);
-
+             
             if (!response.IsValidResponse)
             {
-                Console.WriteLine(response.DebugInformation);
                 throw new Exception("Failed to clear index in Elasticsearch");
             }
 
             return response;
         }
 
-        public async Task<DeleteResponse> DeleteDocumentAsync(string indexName, string documentId)
+        public async Task<DeleteResponse> DeleteDocumentAsync(string documentId, string indexName)
         {
             var response = await _client.DeleteAsync<object>(documentId, d => d.Index(indexName));
 
             if (!response.IsValidResponse)
             {
-                Console.WriteLine(response.DebugInformation);
                 throw new Exception($"Failed to delete document with ID {documentId} in Elasticsearch");
             }
 

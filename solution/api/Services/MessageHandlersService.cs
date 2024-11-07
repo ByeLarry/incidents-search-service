@@ -16,9 +16,7 @@ namespace api.Services
             if (messageObject == null)
                 return MessageStatuses.IncorrectMessage;
 
-            var response = await ProtectedSwitchPattern(messageObject);
-            Console.WriteLine($"[{messageObject.pattern}] status: {response}");
-            return response;
+            return await ProtectedSwitchPattern(messageObject);
         }
 
         private async Task<string> ProtectedSwitchPattern(MessageDto messageObject)
@@ -40,28 +38,22 @@ namespace api.Services
             {
                 SearchMessages.SetMarks => await HandleSetMarks(messageDto.data),
                 SearchMessages.SetMark => await HandleSetMark(messageDto.data),
-                SearchMessages.GetMarks => await HandleGetMarks(messageDto.data),
-                SearchMessages.GetMark => await HandleGetMark(messageDto.data),
+                SearchMessages.DeleteMark => await HandleDeleteMark(messageDto.data),
                 SearchMessages.SetCategories => await HandleSetCategories(messageDto.data),
                 SearchMessages.SetCategory => await HandleSetCategory(messageDto.data),
-                SearchMessages.GetCategories => await HandleGetCategories(messageDto.data),
-                SearchMessages.GetCategory => await HandleGetCategory(messageDto.data),
+                SearchMessages.DeleteCategory => await HandleDeleteCategory(messageDto.data),
                 SearchMessages.SetUsers => await HandleSetUsers(messageDto.data),
                 SearchMessages.SetUser => await HandleSetUser(messageDto.data),
-                SearchMessages.GetUsers => await HandleGetUsers(messageDto.data),
-                SearchMessages.GetUser =>await HandleGetUser(messageDto.data),
+                SearchMessages.DeleteUser => await HandleDeleteUser(messageDto.data),
                 _ => MessageStatuses.IncorrectPattern
             };
         }
 
         private async Task<string> HandleSetMarks(JsonElement message)
         {
-            if (message.ValueKind != JsonValueKind.Array)
-            {
-                await _es.ClearIndexAsync(Indeces.Marks);
-                return MessageStatuses.IndexCleared;
-            }
-
+            
+            await _es.ClearIndexAsync(Indeces.Marks);
+         
             var marks = JsonSerializer.Deserialize<MarkDto[]>(message);
 
             if (marks == null)
@@ -71,23 +63,32 @@ namespace api.Services
             return MessageStatuses.Indexed;
         }
 
-        private Task<string> HandleSetMark(JsonElement message)
+        private async Task<string> HandleSetMark(JsonElement message)
         {
-            return Task.FromResult(MessageStatuses.Indexed);
+            var mark = JsonSerializer.Deserialize<MarkDto>(message);
+
+            if (mark == null)
+                return MessageStatuses.IncorrectData;
+
+            await _es.IndexDocumentAsync(mark, Indeces.Marks);
+            return MessageStatuses.Indexed;
         }
 
-        private Task<string> HandleGetMarks(JsonElement message)
+        private async Task<string> HandleDeleteMark(JsonElement message)
         {
-            return Task.FromResult(MessageStatuses.Indexed);
-        }
+            var mark = JsonSerializer.Deserialize<MarkDto>(message);
 
-        private Task<string> HandleGetMark(JsonElement message)
-        {
-            return Task.FromResult(MessageStatuses.Indexed);
+            if (mark == null)
+                return MessageStatuses.IncorrectData;
+
+            await _es.DeleteDocumentAsync(mark.id.ToString(), Indeces.Marks);
+            return MessageStatuses.Deleted;
         }
 
         private async Task<string> HandleSetCategories(JsonElement message)
         {
+            await _es.ClearIndexAsync(Indeces.Categories);
+             
             var categories = JsonSerializer.Deserialize<CategoryDto[]>(message);
 
             if (categories == null)
@@ -108,18 +109,21 @@ namespace api.Services
             return MessageStatuses.Indexed;
         }
 
-        private Task<string> HandleGetCategories(JsonElement message)
+        private async Task<string> HandleDeleteCategory(JsonElement message)
         {
-            return Task.FromResult(MessageStatuses.Indexed);
-        }
+            var category = JsonSerializer.Deserialize<CategoryDto>(message);
 
-        private Task<string> HandleGetCategory(JsonElement message)
-        {
-            return Task.FromResult(MessageStatuses.Indexed);
+            if (category == null)
+                return MessageStatuses.IncorrectData;
+
+            await _es.DeleteDocumentAsync(category.id.ToString(), Indeces.Categories);
+            return MessageStatuses.Deleted;
         }
 
         private async Task<string> HandleSetUsers(JsonElement message)
         {
+            await _es.ClearIndexAsync(Indeces.Users);
+
             var users = JsonSerializer.Deserialize<UserDto[]>(message);
 
             if (users == null)
@@ -129,19 +133,26 @@ namespace api.Services
             return MessageStatuses.Indexed;
         }
 
-        private Task<string> HandleSetUser(JsonElement message)
+        private async Task<string> HandleSetUser(JsonElement message)
         {
-            return Task.FromResult(MessageStatuses.Indexed);
+            var user = JsonSerializer.Deserialize<UserDto>(message);
+
+            if (user == null)
+                return MessageStatuses.IncorrectData;
+
+            await _es.IndexDocumentAsync(user, Indeces.Users);
+            return MessageStatuses.Indexed;
         }
 
-        private Task<string> HandleGetUsers(JsonElement message)
+        private async Task<string> HandleDeleteUser(JsonElement message)
         {
-            return Task.FromResult(MessageStatuses.Indexed);
-        }
+            var user = JsonSerializer.Deserialize<UserDto>(message);
 
-        private Task<string> HandleGetUser(JsonElement message)
-        {
-            return Task.FromResult(MessageStatuses.Indexed);
+            if (user == null)
+                return MessageStatuses.IncorrectData;
+
+            await _es.DeleteDocumentAsync(user.id.ToString(), Indeces.Users);
+            return MessageStatuses.Deleted;
         }
     }
 }
