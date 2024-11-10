@@ -1,20 +1,25 @@
 ﻿using Elastic.Clients.Elasticsearch;
 using api.Interfaces;
 using Elastic.Clients.Elasticsearch.IndexManagement;
+using api.Dto;
+using Elastic.Clients.Elasticsearch.QueryDsl;
+using Elastic.Transport.Products.Elasticsearch;
 
 namespace api.Services
 {
-    public sealed class ElasticSearchService(ElasticsearchClient client) : IElasticSearchService
+    public sealed class ElasticSearchService : IElasticSearchService
     {
-        private readonly ElasticsearchClient _client = client;
+        private readonly ElasticsearchClient _client;
+
+        public ElasticSearchService(ElasticsearchClient client)
+        {
+            _client = client;
+        }
 
         public async Task<IndexResponse> IndexDocumentAsync<T>(T document, string indexName) where T : class
         {
             var response = await _client.IndexAsync(document, i => i.Index(indexName));
-            if (!response.IsValidResponse)
-            {
-                throw new Exception("Document indexing error in Elasticsearch");
-            }
+            EnsureValidResponse(response, "Document indexing error in Elasticsearch");
             return response;
         }
 
@@ -24,46 +29,48 @@ namespace api.Services
                 await ClearIndexAsync(indexName);
 
             var response = await _client.IndexManyAsync(documents, indexName);
-
-            if (!response.IsValidResponse)
-            {
-                throw new Exception("Documents indexing error in Elasticsearch");
-            }
+            EnsureValidResponse(response, "Documents indexing error in Elasticsearch");
 
             return response;
         }
 
-        public async Task<SearchResponse<T>> SearchAsync<T>(string indexName, string query) where T : class
+        public async Task<SearchResponse<T>> SearchAsync<T>(string indexName, string query, string[] fields) where T : class
         {
             var response = await _client.SearchAsync<T>(s => s
                 .Index(indexName)
-                .Query(q => q.QueryString(qs => qs.Query(query))));
-
+                .SourceIncludes(new[] { "id" })
+                .Query(q => q.Bool(b => b
+                    .Should(
+                        sh => sh.QueryString(qs => qs
+                            .Fields(fields)
+                            .Query($"*{query}*")
+                            .AnalyzeWildcard()
+                            .DefaultOperator(Operator.And)
+                        )
+                    )
+                )));
             return response;
         }
 
         public async Task<DeleteIndexResponse> ClearIndexAsync(string indexName)
         {
-            var response = await _client.Indices.DeleteAsync(indexName);
-             
-            if (!response.IsValidResponse)
-            {
-                throw new Exception("Failed to clear index in Elasticsearch");
-            }
-
-            return response;
+            return await _client.Indices.DeleteAsync(indexName);
         }
 
         public async Task<DeleteResponse> DeleteDocumentAsync(string documentId, string indexName)
         {
             var response = await _client.DeleteAsync<object>(documentId, d => d.Index(indexName));
-
-            if (!response.IsValidResponse)
-            {
-                throw new Exception($"Failed to delete document with ID {documentId} in Elasticsearch");
-            }
+            EnsureValidResponse(response, $"Failed to delete document with ID {documentId} in Elasticsearch");
 
             return response;
+        }
+
+        private static void EnsureValidResponse(ElasticsearchResponse response, string errorMessage)
+        {
+            if (!response.IsValidResponse)
+            {
+                throw new InvalidOperationException(errorMessage);
+            }
         }
     }
 }

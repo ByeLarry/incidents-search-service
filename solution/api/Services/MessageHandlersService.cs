@@ -12,11 +12,7 @@ namespace api.Services
         public async Task<string> HandleMessage(string message)
         {
             var messageObject = JsonSerializer.Deserialize<MessageDto>(message);
-
-            if (messageObject == null)
-                return MessageStatuses.IncorrectMessage;
-
-            return await ProtectedSwitchPattern(messageObject);
+            return messageObject == null ? MessageStatuses.IncorrectMessage : await ProtectedSwitchPattern(messageObject);
         }
 
         private async Task<string> ProtectedSwitchPattern(MessageDto messageObject)
@@ -25,8 +21,18 @@ namespace api.Services
             {
                 return await SwitchPattern(messageObject);
             }
-            catch (Exception ex)  
-            { 
+            catch (ArgumentNullException ex)
+            {
+                Console.WriteLine(ex.Message);
+                return MessageStatuses.SearchingError;
+            }
+            catch (ArgumentException ex)
+            {
+                Console.WriteLine(ex.Message);
+                return MessageStatuses.IncorrectData;
+            }
+            catch (InvalidOperationException ex)
+            {
                 Console.WriteLine(ex.Message);
                 return MessageStatuses.IndexingError;
             }
@@ -36,123 +42,71 @@ namespace api.Services
         {
             return messageDto.pattern switch
             {
-                SearchMessages.SetMarks => await HandleSetMarks(messageDto.data),
-                SearchMessages.SetMark => await HandleSetMark(messageDto.data),
-                SearchMessages.DeleteMark => await HandleDeleteMark(messageDto.data),
-                SearchMessages.SetCategories => await HandleSetCategories(messageDto.data),
-                SearchMessages.SetCategory => await HandleSetCategory(messageDto.data),
-                SearchMessages.DeleteCategory => await HandleDeleteCategory(messageDto.data),
-                SearchMessages.SetUsers => await HandleSetUsers(messageDto.data),
-                SearchMessages.SetUser => await HandleSetUser(messageDto.data),
-                SearchMessages.DeleteUser => await HandleDeleteUser(messageDto.data),
+                SearchMessages.SetMarks => await HandleSetAsync<MarkDto>(messageDto.data, Indeces.Marks),
+                SearchMessages.SetMark => await HandleSingleIndexAsync<MarkDto>(messageDto.data, Indeces.Marks),
+                SearchMessages.DeleteMark => await HandleDeleteAsync<MarkDto>(messageDto.data, Indeces.Marks),
+                SearchMessages.SearchMarks => await HandleSearchAsync<MarkDto>(messageDto.data, Indeces.Marks, new[] { "title", "description", "addressName", "addressDescription" }),
+
+                SearchMessages.SetCategories => await HandleSetAsync<CategoryDto>(messageDto.data, Indeces.Categories),
+                SearchMessages.SetCategory => await HandleSingleIndexAsync<CategoryDto>(messageDto.data, Indeces.Categories),
+                SearchMessages.DeleteCategory => await HandleDeleteAsync<CategoryDto>(messageDto.data, Indeces.Categories),
+                SearchMessages.SearchCategories => await HandleSearchAsync<CategoryDto>(messageDto.data, Indeces.Categories, new[] { "name" }),
+
+                SearchMessages.SetUsers => await HandleSetAsync<UserDto>(messageDto.data, Indeces.Users),
+                SearchMessages.SetUser => await HandleSingleIndexAsync<UserDto>(messageDto.data, Indeces.Users),
+                SearchMessages.DeleteUser => await HandleDeleteAsync<UserDto>(messageDto.data, Indeces.Users),
+                SearchMessages.SearchUsers => await HandleSearchAsync<UserDto>(messageDto.data, Indeces.Users, new[] { "name", "id", "surname", "email" }),
+
                 _ => MessageStatuses.IncorrectPattern
             };
         }
 
-        private async Task<string> HandleSetMarks(JsonElement message)
+        private async Task<string> HandleSetAsync<T>(JsonElement message, string indexName) where T : class
         {
-            
-            await _es.ClearIndexAsync(Indeces.Marks);
-         
-            var marks = JsonSerializer.Deserialize<MarkDto[]>(message);
+            await _es.ClearIndexAsync(indexName);
 
-            if (marks == null)
+            var items = DeserializeArray<T>(message);
+            if (items == null)
                 return MessageStatuses.IncorrectData;
 
-            await _es.IndexManyDocumentsAsync(marks, Indeces.Marks);
+            await _es.IndexManyDocumentsAsync(items, indexName);
             return MessageStatuses.Indexed;
         }
 
-        private async Task<string> HandleSetMark(JsonElement message)
+        private async Task<string> HandleSingleIndexAsync<T>(JsonElement message, string indexName) where T : class
         {
-            var mark = JsonSerializer.Deserialize<MarkDto>(message);
-
-            if (mark == null)
+            var item = JsonSerializer.Deserialize<T>(message);
+            if (item == null)
                 return MessageStatuses.IncorrectData;
 
-            await _es.IndexDocumentAsync(mark, Indeces.Marks);
+            await _es.IndexDocumentAsync(item, indexName);
             return MessageStatuses.Indexed;
         }
 
-        private async Task<string> HandleDeleteMark(JsonElement message)
+        private async Task<string> HandleDeleteAsync<T>(JsonElement message, string indexName) where T : class
         {
-            var mark = JsonSerializer.Deserialize<MarkDto>(message);
-
-            if (mark == null)
+            var item = JsonSerializer.Deserialize<T>(message);
+            if (item == null)
                 return MessageStatuses.IncorrectData;
 
-            await _es.DeleteDocumentAsync(mark.id.ToString(), Indeces.Marks);
+            var id = typeof(T).GetProperty("id")?.GetValue(item)?.ToString();
+            if (string.IsNullOrEmpty(id))
+                return MessageStatuses.IncorrectData;
+
+            await _es.DeleteDocumentAsync(id, indexName);
             return MessageStatuses.Deleted;
         }
 
-        private async Task<string> HandleSetCategories(JsonElement message)
+        private async Task<string> HandleSearchAsync<T>(JsonElement message, string indexName, string[] searchFields) where T : class
         {
-            await _es.ClearIndexAsync(Indeces.Categories);
-             
-            var categories = JsonSerializer.Deserialize<CategoryDto[]>(message);
+            var search = JsonSerializer.Deserialize<SearchDto>(message);
+            if (search == null)
+                throw new ArgumentNullException(nameof(search));
 
-            if (categories == null)
-                return MessageStatuses.IncorrectData;
-
-            await _es.IndexManyDocumentsAsync(categories, Indeces.Categories);
-            return MessageStatuses.Indexed;
+            var response = await _es.SearchAsync<T>(search.index, search.query, searchFields);
+            return JsonSerializer.Serialize(response.Hits.Select(hit => hit.Source).ToList());
         }
 
-        private async Task<string> HandleSetCategory(JsonElement message)
-        {
-            var category = JsonSerializer.Deserialize <CategoryDto>(message);
-
-            if (category == null)
-                return MessageStatuses.IncorrectData;
-
-            await _es.IndexDocumentAsync(category, Indeces.Categories);
-            return MessageStatuses.Indexed;
-        }
-
-        private async Task<string> HandleDeleteCategory(JsonElement message)
-        {
-            var category = JsonSerializer.Deserialize<CategoryDto>(message);
-
-            if (category == null)
-                return MessageStatuses.IncorrectData;
-
-            await _es.DeleteDocumentAsync(category.id.ToString(), Indeces.Categories);
-            return MessageStatuses.Deleted;
-        }
-
-        private async Task<string> HandleSetUsers(JsonElement message)
-        {
-            await _es.ClearIndexAsync(Indeces.Users);
-
-            var users = JsonSerializer.Deserialize<UserDto[]>(message);
-
-            if (users == null)
-                return MessageStatuses.IncorrectData;
-
-            await _es.IndexManyDocumentsAsync(users, Indeces.Users);
-            return MessageStatuses.Indexed;
-        }
-
-        private async Task<string> HandleSetUser(JsonElement message)
-        {
-            var user = JsonSerializer.Deserialize<UserDto>(message);
-
-            if (user == null)
-                return MessageStatuses.IncorrectData;
-
-            await _es.IndexDocumentAsync(user, Indeces.Users);
-            return MessageStatuses.Indexed;
-        }
-
-        private async Task<string> HandleDeleteUser(JsonElement message)
-        {
-            var user = JsonSerializer.Deserialize<UserDto>(message);
-
-            if (user == null)
-                return MessageStatuses.IncorrectData;
-
-            await _es.DeleteDocumentAsync(user.id.ToString(), Indeces.Users);
-            return MessageStatuses.Deleted;
-        }
+        private T[]? DeserializeArray<T>(JsonElement element) => JsonSerializer.Deserialize<T[]>(element);
     }
 }
