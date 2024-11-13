@@ -14,7 +14,7 @@
         public const string GetMarks = "get.mark.all";
         public const string GetMark = "get.mark.one";
         public const string DeleteMark = "delete.mark.one";
-        public const string SearchMarks = "marks.search";
+        public const string SearchMarks = "mark.search";
 
         public const string SetUsers = "set.user.all";
         public const string SetUser = "set.user.one";
