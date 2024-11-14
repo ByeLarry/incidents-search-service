@@ -15,7 +15,7 @@
 cd solution
 
 # Создание и запуск docker сервисов
-docker-compose -f "docker-compose.yml" -f "docker-compose.override.yml" up -d
+docker-compose -f "docker-compose.yml" -f "docker-compose.override.yml" -p "incidents-search-service" up -d
 ```
 
 ## Ссылки
