@@ -25,4 +25,6 @@ docker-compose -f "docker-compose.yml" -f "docker-compose.override.yml" -p "inci
 - #### Сервис марок (инцидентов): *https://github.com/ByeLarry/indcidents-marks-service*
 - #### Клиентская часть:  *https://github.com/ByeLarry/incidents-frontend*
 - #### Панель администратора *https://github.com/ByeLarry/incidents-admin-frontend.git*
-- #### Демонастрация функционала версии 0.1.0: *https://youtu.be/H0-Qg97rvBM*
+- #### Демонастрация функционала пользовательской части версии 0.1.0: *https://youtu.be/H0-Qg97rvBM*
+- #### Демонастрация функционала пользовательской части версии 0.2.0: *https://youtu.be/T33RFvfTxNU*
+- #### Демонастрация функционала панели администратора версии 0.1.0: *https://youtu.be/7LTnEMYuzUo*
