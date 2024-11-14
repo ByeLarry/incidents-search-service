@@ -55,7 +55,7 @@ namespace api.Services
                 SearchMessages.SetUsers => await HandleSetAsync<UserDto>(messageDto.data, Indeces.Users),
                 SearchMessages.SetUser => await HandleSingleIndexAsync<UserDto>(messageDto.data, Indeces.Users),
                 SearchMessages.DeleteUser => await HandleDeleteAsync<UserDto>(messageDto.data, Indeces.Users),
-                SearchMessages.SearchUsers => await HandleSearchAsync<UserDto>(messageDto.data, Indeces.Users, new[] { "id.keyword", "email.keyword", "name.keyword", "surname.keyword" }),
+                SearchMessages.SearchUsers => await HandleSearchAsync<UserDto>(messageDto.data, Indeces.Users, new[] { "id.keyword", "email.keyword", "name", "surname" }),
 
                 _ => MessageStatuses.IncorrectPattern
             };
