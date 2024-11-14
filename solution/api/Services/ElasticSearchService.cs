@@ -4,6 +4,7 @@ using Elastic.Clients.Elasticsearch.IndexManagement;
 using api.Dto;
 using Elastic.Clients.Elasticsearch.QueryDsl;
 using Elastic.Transport.Products.Elasticsearch;
+using System.Text.RegularExpressions;
 
 namespace api.Services
 {
@@ -38,13 +39,13 @@ namespace api.Services
         {
             var response = await _client.SearchAsync<T>(s => s
                 .Index(indexName)
-                .SourceIncludes(new[] { "id" })
+                .SourceIncludes(new[] { "id" })           
                 .Query(q => q.Bool(b => b
                     .Should(
                         sh => sh.QueryString(qs => qs
                             .Fields(fields)
-                            .Query($"*{query}*")
-                            .AnalyzeWildcard()
+                            .Query($"*{EscapeSpecialCharacters(query)}*")
+                            .AnalyzeWildcard(true)
                             .DefaultOperator(Operator.And)
                         )
                     )
@@ -71,6 +72,11 @@ namespace api.Services
             {
                 throw new InvalidOperationException(errorMessage);
             }
+        }
+
+        private string EscapeSpecialCharacters(string query)
+        {
+            return Regex.Replace(query, @"([+\-!(){}\[\]^""~*?:\\/])", @"\$1");
         }
     }
 }
