@@ -1,6 +1,6 @@
 services:
   incidents-search-service:
-    image: ${DOCKER_REGISTRY-}api
+    image: incidents-search
     container_name: incidents-search
     build:
       context: .
