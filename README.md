@@ -18,6 +18,13 @@ cd solution
 docker-compose -f "docker-compose.yml" -f "docker-compose.override.yml" -p "incidents-search-service" up -d
 ```
 
+## Проектирование
+
+_Диаграммы можно сохранять и редактировать в ***[draw.io](https://app.diagrams.net/)***_
+
+- ### Диаграмма прецедентов
+     ![Компоненты микросервиса поиска](https://github.com/user-attachments/assets/3f7bb88a-0454-40c6-b5e5-92ef1e543657)
+
 ## Ссылки
 
 - #### API-шлюз:  *https://github.com/ByeLarry/incidents-gateway*
