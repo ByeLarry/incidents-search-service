@@ -29,11 +29,11 @@ namespace api.Services
             _channel.QueueDeclare(queue: defaultQueue, durable: false, exclusive: false, autoDelete: false, arguments: null);
         }
 
-        public void SendMessage(string message, string queueName, string exchange)
+        public void SendMessage(string message, string queueName, string routingKey = "", string exchange = "")
         {
             _channel.QueueDeclare(queue: queueName, durable: false, exclusive: false, autoDelete: false, arguments: null);
             var body = Encoding.UTF8.GetBytes(message);
-            _channel.BasicPublish(exchange, routingKey: queueName, basicProperties: null, body: body);
+            _channel.BasicPublish(exchange, routingKey, basicProperties: null, body: body);
         }
 
         public void ReceiveMessage(string queueName, Action<string> onMessageReceived)

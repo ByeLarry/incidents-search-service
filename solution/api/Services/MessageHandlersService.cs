@@ -5,9 +5,10 @@ using System.Text.Json;
 
 namespace api.Services
 {
-    public sealed class MessageHandlersService(ElasticSearchService es) : IMessageHandlersService
+    public sealed class MessageHandlersService(ElasticSearchService es, ILogger<MessageHandlersService> logger) : IMessageHandlersService
     {
         private readonly ElasticSearchService _es = es;
+        private readonly ILogger<MessageHandlersService> _logger = logger;
 
         public async Task<string> HandleMessage(string message)
         {
@@ -23,17 +24,17 @@ namespace api.Services
             }
             catch (ArgumentNullException ex)
             {
-                Console.WriteLine(ex.Message);
+                _logger.LogError(ex, "Argument null exception while processing message with pattern: {Pattern}", messageObject.pattern);
                 return MessageStatuses.SearchingError;
             }
             catch (ArgumentException ex)
             {
-                Console.WriteLine(ex.Message);
+                _logger.LogError(ex, "Argument exception while processing message with pattern: {Pattern}", messageObject.pattern);
                 return MessageStatuses.IncorrectData;
             }
             catch (InvalidOperationException ex)
             {
-                Console.WriteLine(ex.Message);
+                _logger.LogError(ex, "Invalid operation exception while processing message with pattern: {Pattern}", messageObject.pattern);
                 return MessageStatuses.IndexingError;
             }
         }
@@ -67,9 +68,19 @@ namespace api.Services
 
             var items = DeserializeArray<T>(message);
             if (items == null)
+            {
+                _logger.LogWarning("Deserialization returned null while processing index: {IndexName}", indexName);
                 return MessageStatuses.IncorrectData;
+            }
 
             await _es.IndexManyDocumentsAsync(items, indexName);
+
+            _logger.LogInformation(
+                "Successfully indexed {Count} items to index: {IndexName}",
+                items.Length,
+                indexName
+            );
+
             return MessageStatuses.Indexed;
         }
 

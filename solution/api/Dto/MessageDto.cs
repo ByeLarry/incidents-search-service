@@ -1,5 +1,4 @@
-﻿using Elastic.Clients.Elasticsearch.MachineLearning;
-using System.Text.Json;
+﻿using System.Text.Json;
 
 namespace api.Dto
 {

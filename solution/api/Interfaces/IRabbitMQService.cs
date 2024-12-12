@@ -2,7 +2,7 @@
 {
     public interface IRabbitMQService : IDisposable
     {
-        void SendMessage(string message, string queueName, string exchange);
+        void SendMessage(string message, string queueName, string routingKey = "", string exchange = "");
 
         void ReceiveMessage(string queueName, Action<string> onMessageReceived);
 

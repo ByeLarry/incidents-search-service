@@ -1,5 +1,6 @@
 ﻿using api.Interfaces;
 using api.Services;
+using api.Utils;
 using HealthChecks.UI.Client;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 
@@ -21,6 +22,10 @@ namespace api.Extensions
             var rabbitMQService = app.ApplicationServices.GetRequiredService<IRabbitMQService>();
 
             var messageHandlersService = app.ApplicationServices.GetRequiredService<MessageHandlersService>();
+
+            rabbitMQService.SendMessage(ReindexMessages.GetSerializedTemplate(RMQPatterns.Marks), Queues.Marks, Queues.Marks);
+            rabbitMQService.SendMessage(ReindexMessages.GetSerializedTemplate(RMQPatterns.Users), Queues.Auth, Queues.Auth);
+            rabbitMQService.SendMessage(ReindexMessages.GetSerializedTemplate(RMQPatterns.Categories), Queues.Marks, Queues.Marks);
 
             rabbitMQService.ReceiveMessageRpc(
                 RabbitMQService.defaultQueue,
