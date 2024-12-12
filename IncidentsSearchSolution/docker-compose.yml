@@ -1,0 +1,12 @@
+services:
+  incidents-search-service:
+    image: incidents-search
+    container_name: incidents-search
+    build:
+      context: .
+      dockerfile: SearchService/Dockerfile
+    depends_on: 
+     - elasticsearch
+  elasticsearch:
+    image: elasticsearch:8.15.3
+    container_name: elasticsearch
