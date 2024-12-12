@@ -2,11 +2,11 @@ name: incidents-search
 
 on:
   push:
-    branches:
-      - main 
   pull_request:
-    branches:
-      - main
+    branches: [ main ]
+    paths:
+    - '**.cs'
+    - '**.csproj'
 
 jobs:
   build:
