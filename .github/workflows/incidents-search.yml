@@ -22,10 +22,10 @@ jobs:
         dotnet-version: '8.0' 
 
     - name: Restore dependencies
-      run: dotnet restore  
+      run: dotnet restore IncidentsSearchSolution/IncidentsSearchSolution.sln
 
     - name: Build
-      run: dotnet build --configuration Release 
+      run: dotnet build IncidentsSearchSolution/IncidentsSearchSolution.sln --configuration Release
 
     - name: Run tests
-      run: dotnet test --configuration Release --no-build  
+      run: dotnet test IncidentsSearchSolution/SearchService.Tests/SearchService.Tests.csproj --configuration Release --no-build
