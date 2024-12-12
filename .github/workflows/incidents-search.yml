@@ -21,6 +21,9 @@ jobs:
       with:
         dotnet-version: '8.0' 
 
+    - name: Change directory to solution directory
+      run: cd IncidentsSearchSolution
+
     - name: Restore dependencies
       run: dotnet restore  
 
