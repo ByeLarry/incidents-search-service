@@ -7,7 +7,7 @@ Project("{E53339B2-1760-4266-BCC7-CA923CBCF16C}") = "docker-compose", "docker-co
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SearchService", "SearchService\SearchService.csproj", "{F3D9B981-AC8F-4643-B2BA-510110BB6A73}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SearchService.Tests", "..\SearchService.Tests\SearchService.Tests.csproj", "{F8D9D97B-B822-4D79-B1E9-D544BB81FE4C}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SearchService.Tests", "SearchService.Tests\SearchService.Tests.csproj", "{FEB80106-A79E-4975-ACAE-C4F80E554460}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -23,10 +23,10 @@ Global
 		{F3D9B981-AC8F-4643-B2BA-510110BB6A73}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{F3D9B981-AC8F-4643-B2BA-510110BB6A73}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{F3D9B981-AC8F-4643-B2BA-510110BB6A73}.Release|Any CPU.Build.0 = Release|Any CPU
-		{F8D9D97B-B822-4D79-B1E9-D544BB81FE4C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{F8D9D97B-B822-4D79-B1E9-D544BB81FE4C}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{F8D9D97B-B822-4D79-B1E9-D544BB81FE4C}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{F8D9D97B-B822-4D79-B1E9-D544BB81FE4C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{FEB80106-A79E-4975-ACAE-C4F80E554460}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{FEB80106-A79E-4975-ACAE-C4F80E554460}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{FEB80106-A79E-4975-ACAE-C4F80E554460}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{FEB80106-A79E-4975-ACAE-C4F80E554460}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
