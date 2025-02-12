@@ -1,4 +1,3 @@
-
 using SearchService.Extensions;
 
 internal class Program

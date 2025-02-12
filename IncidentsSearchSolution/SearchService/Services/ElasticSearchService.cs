@@ -1,7 +1,6 @@
 ﻿using Elastic.Clients.Elasticsearch;
 using SearchService.Interfaces;
 using Elastic.Clients.Elasticsearch.IndexManagement;
-using SearchService.Dto;
 using Elastic.Clients.Elasticsearch.QueryDsl;
 using Elastic.Transport.Products.Elasticsearch;
 using System.Text.RegularExpressions;

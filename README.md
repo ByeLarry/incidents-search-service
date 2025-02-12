@@ -12,7 +12,7 @@
 ### Docker 
 ```bash
 # Переход в директорию с исходниками
-cd solution
+cd IncidentsSearchSolution
 
 # Создание и запуск docker сервисов
 docker-compose -f "docker-compose.yml" -f "docker-compose.override.yml" -p "incidents-search-service" up -d
