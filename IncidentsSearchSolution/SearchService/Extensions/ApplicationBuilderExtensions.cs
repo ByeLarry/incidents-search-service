@@ -1,6 +1,8 @@
 ﻿using SearchService.Interfaces;
 using SearchService.Services;
 using SearchService.Utils;
+using Microsoft.AspNetCore.Diagnostics.HealthChecks;
+using HealthChecks.UI.Client;
 
 namespace SearchService.Extensions
 {
@@ -8,7 +10,10 @@ namespace SearchService.Extensions
     {
         public static void MapCustomHealthChecks(this IEndpointRouteBuilder app)
         {
-            app.MapHealthChecks("/health");
+            app.MapHealthChecks("/health", new HealthCheckOptions
+			{
+				ResponseWriter = UIResponseWriter.WriteHealthCheckUIResponse
+			});
         }
 
         public static void InitializeRabbitMQService(this IApplicationBuilder app)

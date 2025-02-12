@@ -10,7 +10,6 @@ namespace SearchService.Extensions
     {
         public static IServiceCollection AddCustomHealthChecks(this IServiceCollection services)
         {
-            services.AddHealthChecksUI().AddInMemoryStorage();
             services.AddHealthChecks();
             return services;
         }
