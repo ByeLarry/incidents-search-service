@@ -1,9 +1,9 @@
 ﻿namespace SearchService.Options
 {
-    public class ElasticsearchOptoins
-    {
-        public string Url { get; set; }
-        public string Username { get; set; }
-        public string Password { get; set; }
-    }
+	public class ElasticSearchOptions
+	{
+		public required string Uri { get; set; }
+		public required string Username { get; set; }
+		public required string Password { get; set; }
+	}
 }

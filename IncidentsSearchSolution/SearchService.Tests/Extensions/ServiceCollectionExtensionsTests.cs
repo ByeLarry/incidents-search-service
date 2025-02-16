@@ -34,29 +34,41 @@ namespace SearchService.Tests.Extensions
             services.Should().ContainSingle(sd => sd.ServiceType == typeof(IRabbitMQService) && sd.ImplementationType == typeof(RabbitMQService));
         }
 
-        [Fact]
-        public void AddElasticsearchServices_ShouldRegisterElasticsearchClientAndService_WhenConfigurationIsValid()
-        {
-            var services = new ServiceCollection();
-            var inMemoryConfiguration = new Dictionary<string, string>
-            {
-                { "Elasticsearch:Url", "http://localhost:9200" },
-                { "Elasticsearch:Username", "elastic" },
-                { "Elasticsearch:Password", "password" }
-            };
-            var configuration = new ConfigurationBuilder()
-                .AddInMemoryCollection(inMemoryConfiguration)
-                .Build();
+		[Fact]
+		public void AddElasticsearchServices_ShouldRegisterElasticsearchClientAndService_WhenConfigurationIsValid()
+		{
+			// Arrange
+			var services = new ServiceCollection();
+			var inMemoryConfiguration = new Dictionary<string, string>
+			{
+				{ "ElasticsearchOptions:Uri", "http://host.docker.internal:9200" },
+				{ "ElasticsearchOptions:Username", "elastic" },
+				{ "ElasticsearchOptions:Password", "1111" }
+			};
 
-            services.AddElasticsearchServices(configuration);
+			var configuration = new ConfigurationBuilder()
+				.AddInMemoryCollection(inMemoryConfiguration)
+				.Build();
 
-            services.Should().ContainSingle(sd => sd.ServiceType == typeof(ElasticsearchClient));
-            services.Should().ContainSingle(sd => sd.ServiceType == typeof(ElasticSearchService));
-        }
+			// Act
+			services.AddElasticsearchServices(configuration);
+			var serviceProvider = services.BuildServiceProvider();
+
+			// Assert: проверяем регистрацию в DI-контейнере
+			services.Should().ContainSingle(sd => sd.ServiceType == typeof(ElasticsearchClient));
+			services.Should().ContainSingle(sd => sd.ServiceType == typeof(ElasticSearchService));
+
+			// Assert: проверяем создание экземпляра
+			var elasticClient = serviceProvider.GetService<ElasticsearchClient>();
+			elasticClient.Should().NotBeNull();
+
+			var elasticSearchService = serviceProvider.GetService<ElasticSearchService>();
+			elasticSearchService.Should().NotBeNull();
+		}
 
 
 
-        [Fact]
+		[Fact]
         public void AddElasticsearchServices_ShouldNotRegisterElasticsearchClient_WhenConfigurationIsNull()
         {
             var services = new ServiceCollection();
