@@ -23,7 +23,7 @@ docker-compose -f "docker-compose.yml" -f "docker-compose.override.yml" -p "inci
 _Диаграммы можно сохранять и редактировать в ***[draw.io](https://app.diagrams.net/)***_
 
 - ### Компоненты микросервиса поиска
-     ![Компоненты микросервиса поиска](https://github.com/user-attachments/assets/3f7bb88a-0454-40c6-b5e5-92ef1e543657)
+     ![Компоненты микросервиса поиска](https://github.com/user-attachments/assets/54125c8a-30ba-4cf3-819b-868fc769685a)
 
 ## Ссылки
 
